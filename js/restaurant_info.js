@@ -7,7 +7,34 @@ var newMap;
 document.addEventListener('DOMContentLoaded', (event) => {
   initMap();
   registerServiceWorker();
+  window.addEventListener('online', syncReviews);
 });
+
+function showSnackbar(message) {
+  var x = document.getElementById("snackbar");
+  x.innerHTML = message;
+  x.className = "show";
+  setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
+
+
+function syncReviews(event) {
+  database.getReviews()
+    .then(reviews => {
+      reviews = reviews.filter(r => r.isOffline === true)
+      if(reviews.length) {
+        showSnackbar("You're online. Offline reviews are updating")
+      }
+      reviews.forEach(r => {
+        r.isOffline = false;
+        DBHelper.postReview(r, (error, response) => {
+          if(response) {
+            database.createReview(response.id, response)
+          }
+        })
+      })
+    })
+}
 
 /**
  * Initialize leaflet map
@@ -52,6 +79,50 @@ initMap = () => {
     }
   });
 } */
+
+handleCreateReviewForm = event => {
+  let restaurant_id = getParameterByName('id');
+  let name = document.getElementById('review-name').value;
+  let rating = document.getElementById('review-rating').value;
+  let comments = document.getElementById('review-comments').value;
+  let createdAt = Date.now();
+
+  let data = {
+    id: createdAt,
+    restaurant_id,
+    name,
+    rating,
+    comments,
+    createdAt
+  }
+
+
+  data.isOffline = true;
+  database.createReview(data.id, data)
+
+  if(!navigator.onLine) {
+    showSnackbar("Offline! Your review will be updated once online")
+    // update in ui
+    const ul = document.getElementById('reviews-list');
+    ul.appendChild(createReviewHTML(data));
+    document.getElementById("review-form").reset()
+  } else {
+    data.isOffline = false;
+    DBHelper.postReview(data, function(error, response) {
+      // update in ui
+      const ul = document.getElementById('reviews-list');
+      ul.appendChild(createReviewHTML(response));
+      document.getElementById("review-form").reset()
+    });
+  }
+    // DBHelper.fetchReviewsByRestaurantId(restaurant_id, (error, reviews) => {
+    //   if (!reviews) {
+    //     console.error(error);
+    //     return;
+    //   }
+    //   fillReviewsHTML(reviews);
+    // })
+}
 
 /**
  * Get current restaurant from page URL.
@@ -135,7 +206,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  * Create all reviews HTML and add them to the webpage.
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
-  const container = document.getElementById('reviews-container');
+  const container = document.getElementById('reviews-list-container');
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
   container.appendChild(title);

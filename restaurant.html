@@ -56,9 +56,24 @@
 
     <!-- Beginning reviews -->
     <section id="reviews-container">
-      <ul id="reviews-list"></ul>
+      <div id="reviews-list-container">
+        <ul id="reviews-list"></ul>
+      </div>
+
+      <form id="review-form">
+        <h3>Write your review</h3>
+        <label>Your Name</label>
+        <input type="name" id="review-name" />
+        <label>Your Rating</label>
+        <input type="ratinds" id="review-rating" />
+        <label>Your Comments</label>
+        <textarea type="comments"id="review-comments" ></textarea>
+        <button type="button" onclick="handleCreateReviewForm();">Submit Review</button>
+      </form>
     </section>
     <!-- End reviews -->
+
+    <div id="snackbar"></div>
 
   </main>
   <!-- End main -->
