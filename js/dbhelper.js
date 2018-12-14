@@ -2,7 +2,7 @@
  * Common database helper functions.
  */
 
-const DB_NAME = 'mws';
+const DB_NAME = 'mws-stage-3';
 const STORE_RSTNT = 'restaurants';
 const STORE_RVIEW = 'reviews';
 
