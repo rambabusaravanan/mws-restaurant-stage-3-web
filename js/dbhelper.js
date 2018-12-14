@@ -3,51 +3,71 @@
  */
 
 const DB_NAME = 'mws';
-const STORE_NAME = 'restaurants';
+const STORE_RSTNT = 'restaurants';
+const STORE_RVIEW = 'reviews';
 
-const dbPromise = idb.open(DB_NAME, 1, upgradeDB => {
-  upgradeDB.createObjectStore(STORE_NAME);
+const dbPromise = idb.open(DB_NAME, 2, upgradeDB => {
+  switch (upgradeDB.oldVersion) {
+    case 0:
+      upgradeDB.createObjectStore(STORE_RSTNT);
+    case 1:
+      upgradeDB.createObjectStore(STORE_RVIEW);
+    }
+
 });
 
 const database = {
+  getReviews() {
+    return dbPromise.then(db => {
+      return db.transaction(STORE_RVIEW)
+        .objectStore(STORE_RVIEW).getAll();
+    })    
+  },
+  createReview(key, val) {
+    return dbPromise.then(db => {
+      const tx = db.transaction(STORE_RVIEW, 'readwrite');
+      tx.objectStore(STORE_RVIEW).put(val, key);
+      return tx.complete;
+    });
+  },
   getAll() {
     return dbPromise.then(db => {
-      return db.transaction(STORE_NAME)
-        .objectStore(STORE_NAME).getAll();
+      return db.transaction(STORE_RSTNT)
+        .objectStore(STORE_RSTNT).getAll();
     })    
   },
   get(key) {
     return dbPromise.then(db => {
-      return db.transaction(STORE_NAME)
-        .objectStore(STORE_NAME).get(key);
+      return db.transaction(STORE_RSTNT)
+        .objectStore(STORE_RSTNT).get(key);
     });
   },
   set(key, val) {
     return dbPromise.then(db => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).put(val, key);
+      const tx = db.transaction(STORE_RSTNT, 'readwrite');
+      tx.objectStore(STORE_RSTNT).put(val, key);
       return tx.complete;
     });
   },
   delete(key) {
     return dbPromise.then(db => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).delete(key);
+      const tx = db.transaction(STORE_RSTNT, 'readwrite');
+      tx.objectStore(STORE_RSTNT).delete(key);
       return tx.complete;
     });
   },
   clear() {
     return dbPromise.then(db => {
-      const tx = db.transaction(STORE_NAME, 'readwrite');
-      tx.objectStore(STORE_NAME).clear();
+      const tx = db.transaction(STORE_RSTNT, 'readwrite');
+      tx.objectStore(STORE_RSTNT).clear();
       return tx.complete;
     });
   },
   keys() {
     return dbPromise.then(db => {
-      const tx = db.transaction(STORE_NAME);
+      const tx = db.transaction(STORE_RSTNT);
       const keys = [];
-      const store = tx.objectStore(STORE_NAME);
+      const store = tx.objectStore(STORE_RSTNT);
 
       // This would be store.getAllKeys(), but it isn't supported by Edge or Safari.
       // openKeyCursor isn't supported by Safari, so we fall back
@@ -73,7 +93,7 @@ const database = {
     // Changed this to your relative path
     // return 'data/restaurants.json';
     const LOCAL_API = 'http://localhost:1337';
-    const REMOTE_API = 'https://mws-stage-2.herokuapp.com';
+    const REMOTE_API = 'https://mws-stage-3.herokuapp.com';
     return location.hostname === "localhost" ? LOCAL_API : REMOTE_API;
   }
 
@@ -118,6 +138,51 @@ const database = {
     //   }
     // };
     // xhr.send();
+  }
+
+
+  /**
+   * Fetch reviews for a restaurant by its ID.
+   */
+  static fetchReviewsByRestaurantId(id, callback) {
+    let cachedResponse = false;
+    database.getReviews(parseInt(id))
+      .then(reviews => reviews.filter(r => r.restaurant_id === id))
+      .then(reviews => {
+        if(reviews.length) {
+          cachedResponse = true;
+          callback(null, reviews);
+        } 
+
+        // fetch fresh
+        fetch(DBHelper.DATABASE_URL + "/reviews/?restaurant_id="+ id)
+          .then(res => res.json())
+          .then(res => {
+            res.forEach(r => database.createReview(r.id, r));
+            if(!cachedResponse)
+              callback(null, res)
+            // return res;
+          })
+          .catch(error => {
+            console.error(error);
+            error = (`Request failed. ${error.message}`);
+            callback(error, null)
+          })
+      });
+
+    // // fetch all restaurants with proper error handling.
+    // DBHelper.fetchRestaurants((error, restaurants) => {
+    //   if (error) {
+    //     callback(error, null);
+    //   } else {
+    //     const restaurant = restaurants.find(r => r.id == id);
+    //     if (restaurant) { // Got the restaurant
+    //       callback(null, restaurant);
+    //     } else { // Restaurant does not exist in the database
+    //       callback('Restaurant does not exist', null);
+    //     }
+    //   }
+    // });
   }
 
   /**
