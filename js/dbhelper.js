@@ -145,30 +145,31 @@ const database = {
    * Fetch reviews for a restaurant by its ID.
    */
   static fetchReviewsByRestaurantId(id, callback) {
-    let cachedResponse = false;
-    database.getReviews(parseInt(id))
-      .then(reviews => reviews.filter(r => r.restaurant_id === id))
-      .then(reviews => {
-        if(reviews.length) {
-          cachedResponse = true;
-          callback(null, reviews);
-        } 
 
-        // fetch fresh
-        fetch(DBHelper.DATABASE_URL + "/reviews/?restaurant_id="+ id)
-          .then(res => res.json())
-          .then(res => {
-            res.forEach(r => database.createReview(r.id, r));
-            if(!cachedResponse)
-              callback(null, res)
-            // return res;
-          })
-          .catch(error => {
-            console.error(error);
-            error = (`Request failed. ${error.message}`);
-            callback(error, null)
-          })
-      });
+    if(!navigator.onLine) {
+      database.getReviews(parseInt(id))
+        .then(reviews => reviews.filter(r => r.restaurant_id === id))
+        .then(reviews => {
+          if(reviews.length) {
+            callback(null, reviews);
+          }
+        })
+      return;
+    }
+
+    // fetch fresh
+    fetch(DBHelper.DATABASE_URL + "/reviews/?restaurant_id="+ id)
+      .then(res => res.json())
+      .then(res => {
+        res.forEach(r => database.createReview(r.id, r));
+        callback(null, res)
+        // return res;
+      })
+      .catch(error => {
+        console.error(error);
+        error = (`Request failed. ${error.message}`);
+        callback(error, null)
+      })
 
     // // fetch all restaurants with proper error handling.
     // DBHelper.fetchRestaurants((error, restaurants) => {

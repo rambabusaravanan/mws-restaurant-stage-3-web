@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'mws-restaurant';
-const CACHE_NAME = CACHE_PREFIX + '-v3.1';
+const CACHE_NAME = CACHE_PREFIX + '-v3.4';
 
 const pages = [
     '/',
@@ -26,15 +26,23 @@ self.addEventListener('install', event => {
     );
 });
 
+const dynamicUrls = ['/restaurants/', '/reviews']
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches
             .match(event.request)
             .then(cacheResponse => {
-                console.log("sw fetch: " + event.request.url)
+                console.log("sw fetch: ", event.request, location)
+                let isDynamic = dynamicUrls.find(du => event.request.url.indexOf(du)!==-1)
+                if(isDynamic) cacheResponse = null;
+
                 return cacheResponse || fetch(event.request)
                     .then(fetchResponse => {
                         console.log("sw fetch: [fresh] " + event.request.url)
+
+                        if(isDynamic)
+                            return fetchResponse;
+
                         return caches
                             .open(CACHE_NAME)
                             .then(cache => {

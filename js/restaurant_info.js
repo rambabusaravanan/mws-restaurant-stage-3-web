@@ -81,7 +81,7 @@ initMap = () => {
 } */
 
 handleCreateReviewForm = event => {
-  let restaurant_id = getParameterByName('id');
+  let restaurant_id = parseInt(getParameterByName('id'));
   let name = document.getElementById('review-name').value;
   let rating = document.getElementById('review-rating').value;
   let comments = document.getElementById('review-comments').value;
