@@ -533,6 +533,13 @@ button:hover {
 }
 
 
+#favorite {
+    font-size: 3em;
+    float: right;
+    color: Tomato;
+    cursor: pointer;
+}
+
 /* snackbar */
 
 #snackbar {

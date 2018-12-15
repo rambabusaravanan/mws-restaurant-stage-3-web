@@ -80,6 +80,19 @@ initMap = () => {
   });
 } */
 
+handleFavoriteClick = () => {
+  let restaurant = window.restaurant;
+  let fav = restaurant.is_favorite === "true";
+  let newFav = !fav;
+  DBHelper.markFavorite(restaurant.id, newFav, (err, res) => {
+    if(res) {
+      let className = newFav ? "fas fa-heart" : "far fa-heart"
+      document.getElementById("favorite-icon").className = className
+      window.restaurant = res;
+    }
+  })
+}
+
 handleCreateReviewForm = event => {
   let restaurant_id = parseInt(getParameterByName('id'));
   let name = document.getElementById('review-name').value;
@@ -139,6 +152,7 @@ fetchRestaurantFromURL = (callback) => {
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
       self.restaurant = restaurant;
+      window.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
         return;
@@ -166,6 +180,9 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 
   const address = document.getElementById('restaurant-address');
   address.innerHTML = restaurant.address;
+
+  let className = restaurant.is_favorite === "true" ? "fas fa-heart" : "far fa-heart";
+  document.getElementById("favorite-icon").className = className;
 
   const image = document.getElementById('restaurant-img');
   image.className = 'restaurant-img';

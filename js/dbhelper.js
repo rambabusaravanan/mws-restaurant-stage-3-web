@@ -203,6 +203,23 @@ const database = {
       .then(response => response.json()); // parses response to JSON
   }
 
+  static put(url = ``, data = {}) {
+    // Default options are marked with *
+      return fetch(url, {
+          method: "PUT", // *GET, POST, PUT, DELETE, etc.
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+              "Content-Type": "application/json; charset=utf-8",
+          },
+          // redirect: "follow", // manual, *follow, error
+          // referrer: "no-referrer", // no-referrer, *client
+          body: JSON.stringify(data), // body data type must match "Content-Type" header
+      })
+      .then(response => response.json()); // parses response to JSON
+  }
+
   static postReview(review, callback) {
     DBHelper.post(DBHelper.DATABASE_URL + "/reviews", review)
       .then(res => {
@@ -212,6 +229,16 @@ const database = {
         callback(error, null)
       })
   }
+
+  static markFavorite(id, isFavorite, callback) {
+    DBHelper.put(DBHelper.DATABASE_URL + "/restaurants/" + id + "?is_favorite="+isFavorite)
+      .then(res => {
+        callback(null, res)
+      })
+      .catch(error => {
+        callback(error, null)
+      })
+    }
 
   /**
    * Fetch a restaurant by its ID.
