@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'mws-restaurant';
-const CACHE_NAME = CACHE_PREFIX + '-v3.6';
+const CACHE_NAME = CACHE_PREFIX + '-v3.7';
 
 const pages = [
     '/',
