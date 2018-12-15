@@ -362,6 +362,13 @@ nav#breadcrumb {
     line-height: 1.1;
 }
 
+#favorite {
+    font-size: 3em;
+    float: right;
+    color: Tomato;
+    cursor: pointer;
+}
+
 #restaurant-img {
     width: 100%;
 }
@@ -413,6 +420,9 @@ nav#breadcrumb {
     #restaurant-name {
         font-size: 18px;
         margin: 4px 0 8px;
+    }
+    #favorite {
+        font-size: 18px;
     }
 }
 
@@ -530,14 +540,6 @@ button:hover {
     border: 1px solid #3397DB;
     background: #3397DB;
     color: white;
-}
-
-
-#favorite {
-    font-size: 3em;
-    float: right;
-    color: Tomato;
-    cursor: pointer;
 }
 
 /* snackbar */
