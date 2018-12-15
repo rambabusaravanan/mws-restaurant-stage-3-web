@@ -40,7 +40,7 @@
 
     <!-- Beginning restaurant -->
     <section id="restaurant-container">
-      <h1 id="restaurant-name"></h1>
+      <h2 id="restaurant-name"></h2>
       <img id="restaurant-img">
       <p id="restaurant-cuisine"></p>
       <p id="restaurant-address"></p>
@@ -62,12 +62,12 @@
 
       <form id="review-form">
         <h3>Write your review</h3>
-        <label>Your Name</label>
+        <label for="review-name">Your Name</label>
         <input type="name" id="review-name" />
-        <label>Your Rating</label>
+        <label for="review-rating">Your Rating</label>
         <input type="ratinds" id="review-rating" />
-        <label>Your Comments</label>
-        <textarea type="comments"id="review-comments" ></textarea>
+        <label for="review-comments">Your Comments</label>
+        <textarea type="comments" id="review-comments" ></textarea>
         <button type="button" onclick="handleCreateReviewForm();">Submit Review</button>
       </form>
     </section>

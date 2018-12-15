@@ -512,6 +512,7 @@ textarea {
 }
 
 button {
+    margin-bottom: 8px;
     width: 180px;
     border: 1px solid #3397DB;
     border-radius: 5px;

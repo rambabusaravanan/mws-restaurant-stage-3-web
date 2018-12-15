@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'mws-restaurant';
-const CACHE_NAME = CACHE_PREFIX + '-v3.4';
+const CACHE_NAME = CACHE_PREFIX + '-v3.5';
 
 const pages = [
     '/',
@@ -32,21 +32,37 @@ self.addEventListener('fetch', event => {
         caches
             .match(event.request)
             .then(cacheResponse => {
-                console.log("sw fetch: ", event.request, location)
-                let isDynamic = dynamicUrls.find(du => event.request.url.indexOf(du)!==-1)
-                if(isDynamic) cacheResponse = null;
 
-                return cacheResponse || fetch(event.request)
+                var clonnedRequest = event.request.clone();
+                let isDynamic = dynamicUrls.find(du => clonnedRequest.url.indexOf(du)!==-1)
+
+                // Cache hit - return response (for static)
+                if (!isDynamic && cacheResponse) {
+                    return cacheResponse;
+                }
+                
+                return fetch(clonnedRequest)
                     .then(fetchResponse => {
-                        console.log("sw fetch: [fresh] " + event.request.url)
+                        console.log("sw fetch: [freshhit] " + clonnedRequest.url)
 
+                        // Ignore Cache - for dynamic
                         if(isDynamic)
                             return fetchResponse;
 
+                        // Check if we received a valid response
+                        let isBasic = fetchResponse && fetchResponse.type === 'basic' && fetchResponse.status === 200;  // Not just valid 'basic' type
+                        let isOpaque = fetchResponse && fetchResponse.type === 'opaque';                                // Also needs 'opaque' to cache map images
+                        if(!isBasic && !isOpaque) {
+                            console.log("sw fetch: [invalid]", clonnedRequest.url, fetchResponse)
+                            return fetchResponse;
+                        }
+            
+                        console.log("sw fetch: [cached] " + clonnedRequest.url)
+                        let clonnedResponse = fetchResponse.clone();
                         return caches
                             .open(CACHE_NAME)
                             .then(cache => {
-                                cache.put(event.request, fetchResponse.clone());
+                                cache.put(event.request, clonnedResponse);
                                 return fetchResponse;
                             });
                     });
